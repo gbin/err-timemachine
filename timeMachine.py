@@ -11,12 +11,16 @@ from config import BOT_DATA_DIR
 from whoosh.qparser import QueryParser
 
 SUBDIR = "timemachine_index"
-ONE_DAY = timedelta(days = 1)
-ONE_HOUR = timedelta(hours = 1)
-FIVE_MINUTE = timedelta(minutes = 5)
+ONE_DAY = timedelta(days=1)
+ONE_HOUR = timedelta(hours=1)
+FIVE_MINUTE = timedelta(minutes=5)
+
 
 class TimeMachine(BotPlugin):
-    min_err_version = '1.6.0'
+    """
+    This is a plugin recording your chat history in a lucene index
+    """
+    min_err_version = '2.0.0-beta'
     active_poll = None
 
     def activate(self):
@@ -30,7 +34,7 @@ class TimeMachine(BotPlugin):
             os.mkdir(folder)
             logging.debug("Created a new index in %s" % folder)
             self.ix = create_in(folder, schema)
-        self.parser = QueryParser("body", self.ix.schema) # body as the default field, can be overriden by the query itself
+        self.parser = QueryParser("body", self.ix.schema)  # body as the default field, can be overriden by the query itself
         super(TimeMachine, self).activate()
 
     def deactivate(self):
@@ -41,10 +45,9 @@ class TimeMachine(BotPlugin):
     def search(self, q):
         with self.ix.searcher() as searcher:
             result = [dict(result) for result in searcher.search(q, limit=100)]
-        return sorted(result, key=lambda d : d['ts'])
+        return sorted(result, key=lambda d: d['ts'])
 
-
-    @botcmd(template = 'query_results')
+    @botcmd(template='query_results')
     def q(self, mess, args):
         """ Query the timemachine with a lucene query. Type !help q for examples.
 
@@ -59,33 +62,32 @@ class TimeMachine(BotPlugin):
 The bot tells you explicitely what he understood from your query at the top of the results.
 """
         q = self.parser.parse(args)
-        return {'query': unicode(q), 'results' : self.search(q)}
+        return {'query': q, 'results': self.search(q)}
 
-    @botcmd(template = 'query_results')
+    @botcmd(template='query_results')
     def lastday(self, mess, args):
         """ Return what was said within the 24 hours
         """
 
         now = datetime.now()
         q = DateRange('ts', now - ONE_DAY, now)
-        return {'query': unicode(q), 'results' : self.search(q)}
+        return {'query': q, 'results': self.search(q)}
 
-    @botcmd(template = 'query_results')
+    @botcmd(template='query_results')
     def lasthour(self, mess, args):
         """ Return what was said within the last hour
         """
         now = datetime.now()
         q = DateRange('ts', now - ONE_HOUR, now)
-        return {'query': unicode(q), 'results' : self.search(q)}
+        return {'query': q, 'results': self.search(q)}
 
-    @botcmd(template = 'query_results')
+    @botcmd(template='query_results')
     def justnow(self, mess, args):
         """ Return what was just said within the last 5 minutes
         """
         now = datetime.now()
         q = DateRange('ts', now - FIVE_MINUTE, now)
-        return {'query': unicode(q), 'results' : self.search(q)}
-
+        return {'query': q, 'results': self.search(q)}
 
     def callback_message(self, conn, mess):
         body = mess.getBody()
@@ -97,15 +99,11 @@ The bot tells you explicitely what he understood from your query at the top of t
         logging.debug("Index message from %s to %s [%s]" % (from_identity, to_identity, body))
         self.writer = self.ix.writer()
         self.writer.add_document(ts=datetime.now(),
-                            from_node=unicode(from_identity.getNode()),
-                            from_domain=unicode(from_identity.getDomain()),
-                            from_resource=unicode(from_identity.getResource()),
-                            to_node=unicode(to_identity.getNode()),
-                            to_domain=unicode(to_identity.getDomain()),
-                            to_resource=unicode(to_identity.getResource()),
-                            body=body
-        )
+                                 from_node=from_identity.getNode(),
+                                 from_domain=from_identity.getDomain(),
+                                 from_resource=from_identity.getResource(),
+                                 to_node=to_identity.getNode(),
+                                 to_domain=to_identity.getDomain(),
+                                 to_resource=to_identity.getResource(),
+                                 body=body)
         self.writer.commit()
-
-
-
