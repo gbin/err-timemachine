@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 import logging
 from whoosh.query import DateRange
 
-from errbot import botcmd, BotPlugin
+from errbot import botcmd, BotPlugin, webroute, webview
 import os
 from whoosh.index import create_in, open_dir
 from whoosh.fields import DATETIME, TEXT, ID, Schema
 from config import BOT_DATA_DIR
 from whoosh.qparser import QueryParser
+
 
 SUBDIR = "timemachine_index"
 ONE_DAY = timedelta(days=1)
@@ -23,7 +24,25 @@ class TimeMachine(BotPlugin):
     min_err_version = '2.0.0-beta'
     active_poll = None
 
+    def get_configuration_template(self):
+        return {'WEB_HISTORY': False}
+
     def activate(self):
+        if self.config and self.config['WEB_HISTORY']:
+            logging.info("TimeMachine is exposing its web endpoint")
+
+            @webroute('/chatlog')
+            @webroute('/chatlog/')
+            @webroute('/chatlog/:date')
+            @webview('query_results')
+            def anydate(date=None):
+                if not date:
+                    return self._lastday()
+
+                return 'Invalid request'
+        else:
+            logging.info("TimeMachine is not configured yet.")
+
         folder = os.path.join(BOT_DATA_DIR, "timemachine_index")
         if os.path.exists(folder):
             logging.debug("Loading the index from %s" % folder)
@@ -64,14 +83,16 @@ The bot tells you explicitely what he understood from your query at the top of t
         q = self.parser.parse(args)
         return {'query': q, 'results': self.search(q)}
 
+    def _lastday(self):
+        now = datetime.now()
+        q = DateRange('ts', now - ONE_DAY, now)
+        return {'query': q, 'results': self.search(q)}
+
     @botcmd(template='query_results')
     def lastday(self, mess, args):
         """ Return what was said within the 24 hours
         """
-
-        now = datetime.now()
-        q = DateRange('ts', now - ONE_DAY, now)
-        return {'query': q, 'results': self.search(q)}
+        return self._lastday()
 
     @botcmd(template='query_results')
     def lasthour(self, mess, args):
