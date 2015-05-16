@@ -2,5 +2,8 @@
 Name = TimeMachine
 Module = timeMachine
 
+[Python]
+Version = 2+
+
 [Documentation]
 Description = let's go back in time !
