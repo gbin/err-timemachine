@@ -90,20 +90,20 @@ The bot tells you explicitely what he understood from your query at the top of t
         return {'query': q, 'results': self.search(q)}
 
     def callback_message(self, conn, mess):
-        body = mess.getBody()
+        body = mess.body
         if not body:
             return
 
-        from_identity = mess.getFrom()
-        to_identity = mess.getTo()
+        from_identity = mess.frm
+        to_identity = mess.to
         logging.debug("Index message from %s to %s [%s]" % (from_identity, to_identity, body))
         self.writer = self.ix.writer()
         self.writer.add_document(ts=datetime.now(),
-                                 from_node=from_identity.getNode(),
-                                 from_domain=from_identity.getDomain(),
-                                 from_resource=from_identity.getResource(),
-                                 to_node=to_identity.getNode(),
-                                 to_domain=to_identity.getDomain(),
-                                 to_resource=to_identity.getResource(),
+                                 from_node=from_identity.node,
+                                 from_domain=from_identity.domain,
+                                 from_resource=from_identity.resource,
+                                 to_node=to_identity.node,
+                                 to_domain=to_identity.domain,
+                                 to_resource=to_identity.resource,
                                  body=body)
         self.writer.commit()
