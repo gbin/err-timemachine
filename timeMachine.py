@@ -89,7 +89,7 @@ The bot tells you explicitely what he understood from your query at the top of t
         q = DateRange('ts', now - FIVE_MINUTE, now)
         return {'query': q, 'results': self.search(q)}
 
-    def callback_message(self, conn, mess):
+    def callback_message(self, mess):
         body = mess.body
         if not body:
             return
