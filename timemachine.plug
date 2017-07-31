@@ -7,3 +7,6 @@ Version = 2+
 
 [Documentation]
 Description = let's go back in time !
+
+[Errbot]
+Min = 4.0.0

@@ -20,7 +20,7 @@ class TimeMachine(BotPlugin):
     """
     This is a plugin recording your chat history in a lucene index
     """
-    min_err_version = '2.0.0-beta'
+    min_err_version = '4.0.0'
     active_poll = None
 
     def activate(self):
