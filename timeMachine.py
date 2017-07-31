@@ -38,7 +38,6 @@ class TimeMachine(BotPlugin):
 
     def deactivate(self):
         super(TimeMachine, self).deactivate()
-        self.writer = None
         self.ix.close()
 
     def search(self, q):
@@ -96,8 +95,8 @@ The bot tells you explicitely what he understood from your query at the top of t
         from_identity = mess.frm
         to_identity = mess.to
         self.log.debug("Index message from %s to %s [%s]" % (from_identity, to_identity, body))
-        self.writer = self.ix.writer()
-        self.writer.add_document(ts=datetime.now(),
+        with self.ix.writer() as writer:
+            writer.add_document(ts=datetime.now(),
                                  from_node=from_identity.node,
                                  from_domain=from_identity.domain,
                                  from_resource=from_identity.resource,
@@ -105,4 +104,3 @@ The bot tells you explicitely what he understood from your query at the top of t
                                  to_domain=to_identity.domain,
                                  to_resource=to_identity.resource,
                                  body=body)
-        self.writer.commit()
