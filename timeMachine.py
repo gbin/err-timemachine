@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
-import logging
 from whoosh.query import DateRange
 
 from errbot import botcmd, BotPlugin
@@ -26,13 +25,13 @@ class TimeMachine(BotPlugin):
     def activate(self):
         folder = os.path.join(BOT_DATA_DIR, "timemachine_index")
         if os.path.exists(folder):
-            logging.debug("Loading the index from %s" % folder)
+            self.log.debug("Loading the index from %s" % folder)
             self.ix = open_dir(folder)
         else:
             schema = Schema(ts=DATETIME(stored=True), from_node=ID(stored=True), from_domain=ID(stored=True), from_resource=ID(stored=True),
                             to_node=ID(stored=True), to_domain=ID(stored=True), to_resource=ID(stored=True), body=TEXT(stored=True))
             os.mkdir(folder)
-            logging.debug("Created a new index in %s" % folder)
+            self.log.debug("Created a new index in %s" % folder)
             self.ix = create_in(folder, schema)
         self.parser = QueryParser("body", self.ix.schema)  # body as the default field, can be overriden by the query itself
         super(TimeMachine, self).activate()
@@ -96,7 +95,7 @@ The bot tells you explicitely what he understood from your query at the top of t
 
         from_identity = mess.frm
         to_identity = mess.to
-        logging.debug("Index message from %s to %s [%s]" % (from_identity, to_identity, body))
+        self.log.debug("Index message from %s to %s [%s]" % (from_identity, to_identity, body))
         self.writer = self.ix.writer()
         self.writer.add_document(ts=datetime.now(),
                                  from_node=from_identity.node,
