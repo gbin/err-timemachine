@@ -54,7 +54,7 @@ class TimeMachine(BotPlugin):
  !q ts:20120826                         # returns all the messages of 2012-08-26
  !q ts:[20120826 TO 20120827]           # returns all the messages between 2012-08-26 and 2012-08-27
  !q blah                                # returns all the messages with the body "blah"
- !q blah AND ts:[20120826 TO 20120827]  # combinaison of the above
+ !q blah AND ts:[20120826 TO 20120827]  # combinations of the above
 
  The fields you can query on are : 'ts' as DATETIME, 'body' as TEXT, 'from_node' as ID, 'from_domain' as ID, 'from_resource' as ID,
                              'to_node' as ID, 'to_domain' as ID, 'to_resource' as ID
