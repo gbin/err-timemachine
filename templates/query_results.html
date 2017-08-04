@@ -1,7 +1,0 @@
-{% extends "base.html" %}
-{% block body %}
-<p style='margin-top: 0; margin-bottom: 0; font-weight:bold'>Interpreted your query as {{query}}</p>
-{% for result in results %}
-<p style='margin-top: 0; margin-bottom: 0;'>{{result.ts.strftime('%Y-%m-%d %H:%M:%S')}} {{result.from_node}} : {{result.body}}</p>
-{% endfor %}
-{% endblock %}

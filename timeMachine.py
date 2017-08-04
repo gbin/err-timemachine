@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
-import logging
 from whoosh.query import DateRange
 
 from errbot import botcmd, BotPlugin
@@ -20,26 +19,25 @@ class TimeMachine(BotPlugin):
     """
     This is a plugin recording your chat history in a lucene index
     """
-    min_err_version = '2.0.0-beta'
+    min_err_version = '4.0.0'
     active_poll = None
 
     def activate(self):
         folder = os.path.join(BOT_DATA_DIR, "timemachine_index")
         if os.path.exists(folder):
-            logging.debug("Loading the index from %s" % folder)
+            self.log.debug("Loading the index from %s" % folder)
             self.ix = open_dir(folder)
         else:
             schema = Schema(ts=DATETIME(stored=True), from_node=ID(stored=True), from_domain=ID(stored=True), from_resource=ID(stored=True),
                             to_node=ID(stored=True), to_domain=ID(stored=True), to_resource=ID(stored=True), body=TEXT(stored=True))
             os.mkdir(folder)
-            logging.debug("Created a new index in %s" % folder)
+            self.log.debug("Created a new index in %s" % folder)
             self.ix = create_in(folder, schema)
         self.parser = QueryParser("body", self.ix.schema)  # body as the default field, can be overriden by the query itself
         super(TimeMachine, self).activate()
 
     def deactivate(self):
         super(TimeMachine, self).deactivate()
-        self.writer = None
         self.ix.close()
 
     def search(self, q):
@@ -54,7 +52,7 @@ class TimeMachine(BotPlugin):
  !q ts:20120826                         # returns all the messages of 2012-08-26
  !q ts:[20120826 TO 20120827]           # returns all the messages between 2012-08-26 and 2012-08-27
  !q blah                                # returns all the messages with the body "blah"
- !q blah AND ts:[20120826 TO 20120827]  # combinaison of the above
+ !q blah AND ts:[20120826 TO 20120827]  # combinations of the above
 
  The fields you can query on are : 'ts' as DATETIME, 'body' as TEXT, 'from_node' as ID, 'from_domain' as ID, 'from_resource' as ID,
                              'to_node' as ID, 'to_domain' as ID, 'to_resource' as ID
@@ -96,9 +94,9 @@ The bot tells you explicitely what he understood from your query at the top of t
 
         from_identity = mess.frm
         to_identity = mess.to
-        logging.debug("Index message from %s to %s [%s]" % (from_identity, to_identity, body))
-        self.writer = self.ix.writer()
-        self.writer.add_document(ts=datetime.now(),
+        self.log.debug("Index message from %s to %s [%s]" % (from_identity, to_identity, body))
+        with self.ix.writer() as writer:
+            writer.add_document(ts=datetime.now(),
                                  from_node=from_identity.node,
                                  from_domain=from_identity.domain,
                                  from_resource=from_identity.resource,
@@ -106,4 +104,3 @@ The bot tells you explicitely what he understood from your query at the top of t
                                  to_domain=to_identity.domain,
                                  to_resource=to_identity.resource,
                                  body=body)
-        self.writer.commit()
