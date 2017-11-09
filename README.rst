@@ -1,5 +1,5 @@
-timemachine - a logger/indexer for you chatrooms
-================================================
+timemachine - a logger/indexer for your chatrooms
+=================================================
 
 For more information about err you can find it here: https://github.com/errbotio/errbot
 
