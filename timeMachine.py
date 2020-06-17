@@ -57,7 +57,7 @@ class TimeMachine(BotPlugin):
  The fields you can query on are : 'ts' as DATETIME, 'body' as TEXT, 'from_node' as ID, 'from_domain' as ID, 'from_resource' as ID,
                              'to_node' as ID, 'to_domain' as ID, 'to_resource' as ID
 
-The bot tells you explicitely what he understood from your query at the top of the results.
+The bot tells you explicitely what it understood from your query at the top of the results.
 """
         q = self.parser.parse(args)
         return {'query': q, 'results': self.search(q)}
